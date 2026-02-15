@@ -1,17 +1,4 @@
-# Python virtual environment
-.venv/
-
-# IDE files
-.idea/
-
-# Byte-compiled / optimized / DLL files
+ImagesAttendance/
+Attendance.csv
 __pycache__/
-*.py[cod]
-*$py.class
-
-# OS-generated files
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
