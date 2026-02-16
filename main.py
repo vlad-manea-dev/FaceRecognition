@@ -22,15 +22,15 @@ for cl in myList:
 
 print(f'Known persons: {classNames}')
 
-def findEncodings(images):
+def findEncodings(images, classNames):
     encodeList = []
-    for img in images:
+    for img, name in zip(images, classNames):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         encodings = face_recognition.face_encodings(img)
         if len(encodings) > 0:
             encodeList.append(encodings[0])
         else:
-            print("No face found in one of the images.")
+            print(f"No face found in image: {name}")
     return encodeList
 
 def markAttendance(name):
@@ -43,23 +43,37 @@ def markAttendance(name):
         myDataList = f.readlines()
         nameList = []
         for line in myDataList:
-            entry = line.split(',')
-            nameList.append(entry[0])
+            entry = line.strip().split(',')
+            if entry:
+                nameList.append(entry[0])
         
         if name not in nameList:
             now = datetime.now()
             dtString = now.strftime('%H:%M:%S')
             f.write(f'\n{name},{dtString}')
+            print(f"Logged attendance for: {name} at {dtString}")
+        else:
+            # Optional: print only occasionally to avoid spam
+            pass
 
-encodeListKnown = findEncodings(images)
+encodeListKnown = findEncodings(images, classNames)
 print('Encoding Complete')
 
+# Try to open the webcam
 cap = cv2.VideoCapture(0)
+
+if not cap.isOpened():
+    print("Error: Could not open webcam.")
+    print("Troubleshooting for macOS:")
+    print("1. Go to System Settings > Privacy & Security > Camera.")
+    print("2. Ensure your Terminal or IDE (e.g., PyCharm) is toggled ON.")
+    print("3. If you have an iPhone, try turning off 'Continuity Camera' in Settings > General > AirPlay & Handoff.")
+    exit()
 
 while True:
     success, img = cap.read()
     if not success:
-        print("Failed to capture image from webcam.")
+        print("Failed to capture image from webcam. If you have multiple cameras, try changing the index in cv2.VideoCapture(0).")
         break
     
     # Resize image for faster processing
@@ -75,12 +89,16 @@ while True:
         
         if len(faceDis) > 0:
             matchIndex = np.argmin(faceDis)
+            distance = faceDis[matchIndex]
 
-            if faceDis[matchIndex] < 0.50:
+            if distance < 0.50:
                 name = classNames[matchIndex].upper()
                 markAttendance(name)
             else:
                 name = 'Unknown'
+            
+            # Print distance for debugging
+            print(f"Recognized: {name} (Distance: {distance:.2f})")
         else:
             name = 'Unknown'
 

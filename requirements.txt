@@ -1,3 +1,4 @@
 opencv-python
 numpy
 face-recognition
+face-recognition-models
